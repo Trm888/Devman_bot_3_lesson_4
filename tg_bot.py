@@ -65,7 +65,7 @@ def main():
 
     def give_up(update: Update, context: CallbackContext):
         full_answer = redis_db.get('answer').decode('utf-8')
-        update.callback_query.edit_message_text(f'<b>Правильный ответ: {full_answer}',
+        update.callback_query.edit_message_text(f'Правильный ответ: {full_answer}',
                                                 reply_markup=InlineKeyboardMarkup(
                                                     [
                                                         [InlineKeyboardButton(text='Новый вопрос',
