@@ -2,11 +2,11 @@ import os
 
 
 def get_questions_answers():
-    files = os.listdir(os.path.join(os.getcwd(), 'quiz-questions'))
+    files = os.listdir(os.path.join('.', 'quiz-questions'))
     questions = []
     answers = []
     for file in files:
-        with open(os.path.join(os.getcwd(), 'quiz-questions', file), 'r', encoding='KOI8-R') as f:
+        with open(os.path.join('.', 'quiz-questions', file), 'r', encoding='KOI8-R') as f:
             file_content = f.read()
         blocks = file_content.split('\n\n')
         for block in blocks:
