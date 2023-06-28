@@ -1,14 +1,12 @@
 import os
-import pathlib
 
 
 def get_questions_answers():
-    path = '/opt/Devman_bot_3_lesson_4/quiz-questions'
-    files = os.listdir(path)
+    files = os.listdir(os.path.join(os.getcwd(), 'quiz-questions'))
     questions = []
     answers = []
     for file in files:
-        with open(os.path.join(path, file), 'r', encoding='KOI8-R') as f:
+        with open(os.path.join(os.getcwd(), 'quiz-questions', file), 'r', encoding='KOI8-R') as f:
             file_content = f.read()
         blocks = file_content.split('\n\n')
         for block in blocks:
