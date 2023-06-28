@@ -1,12 +1,14 @@
 import os
+import pathlib
 
 
 def get_questions_answers():
-    files = os.listdir(os.path.join('.', 'quiz-questions'))
+    files = os.listdir(pathlib.PurePath.joinpath(pathlib.Path.cwd(), 'quiz-questions'))
+    print(files)
     questions = []
     answers = []
     for file in files:
-        with open(os.path.join('.', 'quiz-questions', file), 'r', encoding='KOI8-R') as f:
+        with open(pathlib.PurePath.joinpath(pathlib.Path.cwd(), 'quiz-questions', file), 'r', encoding='KOI8-R') as f:
             file_content = f.read()
         blocks = file_content.split('\n\n')
         for block in blocks:
