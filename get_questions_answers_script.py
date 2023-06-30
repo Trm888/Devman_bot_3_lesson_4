@@ -2,7 +2,6 @@ import os
 
 
 def get_questions_answers(filepath):
-    # filepath = (os.path.join(os.getcwd(), 'quiz-questions'))
     files = os.listdir(filepath)
     questions = []
     answers = []
@@ -21,4 +20,3 @@ def get_questions_answers(filepath):
 
     questions_answers = dict(zip(questions, answers))
     return questions_answers
-
