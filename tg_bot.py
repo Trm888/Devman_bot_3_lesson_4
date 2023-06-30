@@ -1,7 +1,9 @@
 import argparse
 import logging
 import os
+import pathlib
 import random
+from logging.handlers import RotatingFileHandler
 
 import redis
 import telegram
@@ -12,11 +14,18 @@ from telegram.ext import CallbackContext, CommandHandler, Updater, CallbackQuery
 
 from get_questions_answers_script import get_questions_answers
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 logger = logging.getLogger(__name__)
 
 
 def main():
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    file_handler = RotatingFileHandler(pathlib.PurePath.joinpath(pathlib.Path.cwd(), 'tg_bot.log'),
+                                       maxBytes=100000,
+                                       backupCount=3)
+    file_handler.setFormatter(logging.Formatter('level=%(levelname)s time="%(asctime)s" message="%(message)s"'))
+    logger.addHandler(file_handler)
+
     env = Env()
     env.read_env()
     bot_token = env.str('TG_TOKEN')

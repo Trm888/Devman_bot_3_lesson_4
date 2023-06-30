@@ -1,7 +1,9 @@
 import argparse
 import logging
 import os
+import pathlib
 import random
+from logging.handlers import RotatingFileHandler
 
 import redis
 import vk_api as vk
@@ -11,11 +13,19 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 
 from get_questions_answers_script import get_questions_answers
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 logger = logging.getLogger(__name__)
 
 
 def main():
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    file_handler = RotatingFileHandler(pathlib.PurePath.joinpath(pathlib.Path.cwd(), 'tg_bot.log'),
+                                       maxBytes=100000,
+                                       backupCount=3)
+    file_handler.setFormatter(logging.Formatter('level=%(levelname)s time="%(asctime)s" message="%(message)s"'))
+    logger.addHandler(file_handler)
+
+
     env = Env()
     env.read_env()
     vk_group_token = env.str('VK_API_KEY')
