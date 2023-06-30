@@ -1,12 +1,13 @@
 import os
 
 
-def get_questions_answers():
-    files = os.listdir(os.path.join(os.getcwd(), 'quiz-questions'))
+def get_questions_answers(filepath):
+    # filepath = (os.path.join(os.getcwd(), 'quiz-questions'))
+    files = os.listdir(filepath)
     questions = []
     answers = []
     for file in files:
-        with open(os.path.join(os.getcwd(), 'quiz-questions', file), 'r', encoding='KOI8-R') as f:
+        with open(os.path.join(filepath, file), 'r', encoding='KOI8-R') as f:
             file_content = f.read()
         blocks = file_content.split('\n\n')
         for block in blocks:
@@ -20,3 +21,4 @@ def get_questions_answers():
 
     questions_answers = dict(zip(questions, answers))
     return questions_answers
+

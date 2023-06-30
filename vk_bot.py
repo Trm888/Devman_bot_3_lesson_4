@@ -1,4 +1,6 @@
+import argparse
 import logging
+import os
 import random
 
 import redis
@@ -14,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    quiz = get_questions_answers()
     env = Env()
     env.read_env()
     vk_group_token = env.str('VK_API_KEY')
@@ -22,6 +23,17 @@ def main():
     port = env.int('REDIS_PORT')
     redis_password = env.str('REDIS_PASSWORD')
     redis_db = redis.Redis(host=host, port=port, password=redis_password)
+    default_file_path = (os.path.join(os.getcwd(), 'quiz-questions'))
+    parser = argparse.ArgumentParser(description='Запуск скрипта')
+    parser.add_argument(
+        '-fp',
+        '--file_path',
+        help='Укажите путь к файлу',
+        nargs='?', default=default_file_path, type=str
+    )
+    args = parser.parse_args()
+    file_path = args.file_path
+    quiz = get_questions_answers(filepath=file_path)
 
     keyboard_start = VkKeyboard(one_time=True)
     keyboard_continue = VkKeyboard(one_time=True)
