@@ -13,8 +13,47 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 
 from get_questions_answers_script import get_questions_answers
 
-
 logger = logging.getLogger(__name__)
+
+
+def start_keyboard():
+    keyboard_start = VkKeyboard(one_time=True)
+    keyboard_start.add_button('Новый вопрос', color=VkKeyboardColor.POSITIVE)
+    keyboard_start.add_button('Мой счет', color=VkKeyboardColor.POSITIVE)
+    return keyboard_start.get_keyboard()
+
+
+def continue_keyboard():
+    keyboard_continue = VkKeyboard(one_time=True)
+    keyboard_continue.add_button('Сдаться', color=VkKeyboardColor.POSITIVE)
+    keyboard_continue.add_button('Мой счет', color=VkKeyboardColor.POSITIVE)
+    return keyboard_continue.get_keyboard()
+
+
+def start(vk_api, event):
+    vk_api.messages.send(
+        user_id=event.user_id,
+        message='🤜Привет я бот для викторин!🤛',
+        random_id=random.randint(1, 1000),
+        keyboard=start_keyboard(),
+    )
+
+
+def new_question(vk_api, event, redis_db, quiz_info):
+    keyboard_continue = VkKeyboard(one_time=True)
+    keyboard_continue.add_button('Сдаться', color=VkKeyboardColor.POSITIVE)
+    keyboard_continue.add_button('Мой счет', color=VkKeyboardColor.POSITIVE)
+    random_question_answer = random.choice(list(quiz_info.items()))
+    question = random_question_answer[0]
+    answer = random_question_answer[1]
+    redis_db.set('question', question)
+    redis_db.set('answer', answer)
+    vk_api.messages.send(
+        user_id=event.user_id,
+        message=question,
+        random_id=random.randint(1, 1000),
+        keyboard=continue_keyboard(),
+    )
 
 
 def main():
@@ -24,7 +63,6 @@ def main():
                                        backupCount=3)
     file_handler.setFormatter(logging.Formatter('level=%(levelname)s time="%(asctime)s" message="%(message)s"'))
     logger.addHandler(file_handler)
-
 
     env = Env()
     env.read_env()
@@ -46,36 +84,7 @@ def main():
     )
     args = parser.parse_args()
     file_path = args.file_path
-    quiz = get_questions_answers(filepath=file_path)
-
-    keyboard_start = VkKeyboard(one_time=True)
-    keyboard_continue = VkKeyboard(one_time=True)
-
-    keyboard_start.add_button('Новый вопрос', color=VkKeyboardColor.POSITIVE)
-    keyboard_start.add_button('Мой счет', color=VkKeyboardColor.POSITIVE)
-    keyboard_continue.add_button('Сдаться', color=VkKeyboardColor.POSITIVE)
-    keyboard_continue.add_button('Мой счет', color=VkKeyboardColor.POSITIVE)
-
-    def start():
-        vk_api.messages.send(
-            user_id=event.user_id,
-            message='🤜Привет я бот для викторин!🤛',
-            random_id=random.randint(1, 1000),
-            keyboard=keyboard_start.get_keyboard(),
-        )
-
-    def new_question():
-        random_question_answer = random.choice(list(quiz.items()))
-        question = random_question_answer[0]
-        answer = random_question_answer[1]
-        redis_db.set('question', question)
-        redis_db.set('answer', answer)
-        vk_api.messages.send(
-            user_id=event.user_id,
-            message=question,
-            random_id=random.randint(1, 1000),
-            keyboard=keyboard_continue.get_keyboard(),
-        )
+    questions_answers = get_questions_answers(filepath=file_path)
 
     while True:
         try:
@@ -86,16 +95,16 @@ def main():
             for event in longpoll.listen():
                 if event.type == VkEventType.MESSAGE_NEW and event.to_me:
                     if event.text == "start":
-                        start()
+                        start(vk_api, event)
                     elif event.text == "Сдаться":
                         vk_api.messages.send(
                             user_id=event.user_id,
                             message=f'Правильный ответ: {redis_db.get("answer").decode("utf-8")}',
                             random_id=random.randint(1, 1000),
-                            keyboard=keyboard_start.get_keyboard(),
+                            keyboard=start_keyboard(),
                         )
                     elif event.text == 'Новый вопрос':
-                        new_question()
+                        new_question(vk_api, event, redis_db, questions_answers)
                     else:
                         full_answer = redis_db.get('answer').decode('utf-8')
                         end_index = min(full_answer.find('('), full_answer.find('.'))
@@ -105,14 +114,14 @@ def main():
                                 user_id=event.user_id,
                                 message='🎉Правильно! Поздравляю! Ты молодец!🎉',
                                 random_id=random.randint(1, 1000),
-                                keyboard=keyboard_start.get_keyboard(),
+                                keyboard=start_keyboard(),
                             )
                         else:
                             vk_api.messages.send(
                                 user_id=event.user_id,
                                 message='👎Не правильно! Попробуй еще раз!👎',
                                 random_id=random.randint(1, 1000),
-                                keyboard=keyboard_continue.get_keyboard(),
+                                keyboard=continue_keyboard(),
                             )
 
         except Exception as error:
