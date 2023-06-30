@@ -23,7 +23,10 @@ def main():
     port = env.int('REDIS_PORT')
     redis_password = env.str('REDIS_PASSWORD')
     redis_db = redis.Redis(host=host, port=port, password=redis_password)
-    default_file_path = (os.path.join(os.getcwd(), 'quiz-questions'))
+    if env.str('FILE_PATH'):
+        default_file_path = env.str('FILE_PATH')
+    else:
+        default_file_path = (os.path.join(os.getcwd(), 'quiz-questions'))
     parser = argparse.ArgumentParser(description='Запуск скрипта')
     parser.add_argument(
         '-fp',
